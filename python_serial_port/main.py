@@ -10,8 +10,8 @@ while(1):
         serialPortByte = serialPort.read(1)
         # Print the received byte in Python terminal
         try:
-            serialPortByte.decode("ascii")
+            char = serialPortByte.decode("ascii")
         except UnicodeDecodeError:
             pass
         else:
-            print(serialPortByte.decode("Ascii"), end="")
+            print(char, end="")
