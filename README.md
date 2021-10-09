@@ -2,7 +2,7 @@
 
 A basic Python application with serial port communication using [pySerial](https://pypi.org/project/pyserial/) and GUI design using [Tkinter](https://docs.python.org/3/library/tkinter.html).
 
-To test the performance of our Python program, an Arduino program is written to send data on serial port a the baudrate of 921600.
+To test the performance of our Python program, an Arduino program is written to send data on serial port at the baudrate of 921600.
 
 ## Install dependencies
 

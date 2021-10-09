@@ -107,7 +107,8 @@ class GUI:
             font=("Sans", "10", "bold"),
         )
 
-        self.textBox.insert(tk.INSERT, "Nothing!\n")
+        # Start updating textbox in GUI
+        self.recursive_update_textbox()
 
         ###############################
         ## Widgets size and position ##
@@ -164,6 +165,8 @@ class GUI:
             self.serialPortManager.set_name(self.serialPortName)
             self.serialPortManager.set_baud(self.serialPortBaud)
             self.serialPortManager.start()
+            # Start updating textbox in GUI
+            self.recursive_update_textbox()
 
         else:
             self.isStarted = False
@@ -228,6 +231,14 @@ class GUI:
             )
         # Set default value of selectedPort
         self.selectedPort.set(portNames[0])
+
+    def recursive_update_textbox(self):
+        # Update textbox in a kind of recursive function using Tkinter after() method
+        self.textBox.insert(tk.INSERT, "Nothing!\n")
+
+        # Recursively call recursive_update_textbox using Tkinter after() method
+        if self.serialPortManager.isRunning:
+            self.window.after(self.guiUpdateInterval, self.recursive_update_textbox)
 
     def close_window(self):
         if self.isStarted:
