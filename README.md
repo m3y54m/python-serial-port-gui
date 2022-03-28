@@ -18,3 +18,7 @@ pip install -r requirements.txt
 - [tkinter.scrolledtext — Scrolled Text Widget](https://docs.python.org/3/library/tkinter.scrolledtext.html)
 - [PySerial Short Introduction](https://pyserial.readthedocs.io/en/latest/shortintro.html)
 - [An Intro to Threading in Python](https://realpython.com/intro-to-python-threading/)
+
+## License
+
+This project is licensed under the MIT license.
