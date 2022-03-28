@@ -20,6 +20,5 @@ void loop() {
   Serial.print("#");
   Serial.println(counter);
 
-  // Wait for 1 second
   //delay(10);
 }
