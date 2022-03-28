@@ -2,14 +2,7 @@ import serial
 
 serialPort = serial.Serial(port="COM1", baudrate=9600)
 
-sb = bytearray()
-print(sb)
-sb.append(1)
-sb.append(2)
-sb.pop(0)
-print(len(sb))
-print(sb)
-while False:
+while True:
         # Read only one byte from serial port
         serialPortByte = serialPort.read(1)
 
