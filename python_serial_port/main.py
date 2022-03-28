@@ -23,10 +23,24 @@ class GUI:
     def __init__(self, title):
 
         self.portNamesList = []
+        self.baudRatesList = [
+            1200,
+            2400,
+            4800,
+            9600,
+            19200,
+            38400,
+            57600,
+            115200,
+            230400,
+            460800,
+            576000,
+            921600,
+        ]
         self.isAnyPortAvailable = False
         self.isStarted = False
         self.serialPortName = None
-        self.serialPortBaud = 921600
+        self.serialPortBaud = 9600
 
         self.serialPortManager = SerialPortManager(self.serialPortBaud)
         self.get_available_serial_ports()
@@ -79,6 +93,27 @@ class GUI:
         if self.isAnyPortAvailable == False:
             self.portsOptionMenu.configure(state="disabled")
 
+        # Define a tk.IntVar for storing selected item in OptionMenu
+        self.selectedBaudRate = tk.IntVar()
+        # Set default value of selectedBaudRate
+        self.selectedBaudRate.set(self.baudRatesList[3])
+        self.baudRatesOptionMenu = tk.OptionMenu(
+            self.topFrame, self.selectedBaudRate, *self.baudRatesList
+        )
+
+        self.baudRatesOptionMenu.configure(
+            bg="#ffffff",
+            fg="#222222",
+            border=0,
+            highlightbackground="#aaaaaa",
+            activebackground="#eeeeee",
+            activeforeground="#111111",
+            direction="left",
+            font=("Sans", "10", "bold"),
+        )
+        if self.isAnyPortAvailable == False:
+            self.baudRatesOptionMenu.configure(state="disabled")
+
         self.connectButton = tk.Button(
             self.topFrame,
             text="Connect",
@@ -102,6 +137,7 @@ class GUI:
             bg="#222222",
             fg="#eeeeee",
             border=0,
+            wrap="none",
             highlightbackground="#aaaaaa",
             highlightthickness=2,
             font=("Sans", "10", "bold"),
@@ -116,9 +152,9 @@ class GUI:
 
         spacing = 10
         padding = 10
-        widget_width = 300
-        window_width = widget_width+2*padding
-        window_height = 400
+        widget_width = 800
+        window_width = widget_width + 2 * padding
+        window_height = 500
 
         # Size of application window
         self.window.geometry("{}x{}".format(window_width, window_height))
@@ -128,22 +164,20 @@ class GUI:
         self.topFrame.configure(padx=padding, pady=padding)
         self.topFrame.place(x=0, y=0, width=window_width, height=window_height)
 
-        self.scanButton.configure(
-            width=widget_width, padx=padding, pady=padding)
+        self.scanButton.configure(width=widget_width, padx=padding, pady=padding)
         self.scanButton.pack(pady=(0, spacing))
 
-        self.portsOptionMenu.configure(
-            width=widget_width, padx=padding, pady=padding)
+        self.portsOptionMenu.configure(width=widget_width, padx=padding, pady=padding)
         self.portsOptionMenu.pack(pady=(0, spacing))
 
-        self.connectButton.configure(
-            width=widget_width, padx=padding, pady=padding)
+        self.baudRatesOptionMenu.configure(width=widget_width, padx=padding, pady=padding)
+        self.baudRatesOptionMenu.pack(pady=(0, spacing))
+
+        self.connectButton.configure(width=widget_width, padx=padding, pady=padding)
         self.connectButton.pack(pady=(0, spacing))
 
-        self.textBox.configure(
-            width=widget_width, padx=padding, pady=padding)
+        self.textBox.configure(width=widget_width, padx=padding, pady=padding)
         self.textBox.pack()
-
 
         self.window.protocol("WM_DELETE_WINDOW", self.close_window)
         # Blocking loop for GUI (Always put at the end)
@@ -161,6 +195,8 @@ class GUI:
             )
             # Get desired serial port name
             self.serialPortName = self.selectedPort.get()
+            # Get desired serial port baud rate
+            self.serialPortBaud = self.selectedBaudRate.get()
             # Start Serial Port Communication
             self.serialPortManager.set_name(self.serialPortName)
             self.serialPortManager.set_baud(self.serialPortBaud)
@@ -185,12 +221,14 @@ class GUI:
             self.isAnyPortAvailable = False
             self.portNamesList = ["No ports available"]
             self.portsOptionMenu.configure(state="disabled")
+            self.baudRatesOptionMenu.configure(state="disabled")
             self.connectButton.configure(
                 state="disabled", bg="#bbbbbb", highlightbackground="#aaaaaa"
             )
         else:
             self.isAnyPortAvailable = True
             self.portsOptionMenu.configure(state="normal")
+            self.baudRatesOptionMenu.configure(state="normal")
             if self.isStarted:
                 self.connectButton.configure(
                     bg="#ba0020",
@@ -233,9 +271,11 @@ class GUI:
         self.selectedPort.set(portNames[0])
 
     def recursive_update_textbox(self):
+        serialPortBuffer = self.serialPortManager.read_buffer()
         # Update textbox in a kind of recursive function using Tkinter after() method
-        self.textBox.insert(tk.INSERT, "Nothing!\n")
-
+        self.textBox.insert(tk.INSERT, serialPortBuffer.decode("ascii"))
+        # autoscroll to the bottom
+        self.textBox.see(tk.END)
         # Recursively call recursive_update_textbox using Tkinter after() method
         if self.serialPortManager.isRunning:
             self.window.after(self.guiUpdateInterval, self.recursive_update_textbox)
@@ -253,6 +293,8 @@ class SerialPortManager:
         self.serialPortName = None
         self.serialPortBaud = serialPortBaud
         self.serialPort = serial.Serial()
+        # Create a byte array to store incoming data
+        self.serialPortBuffer = bytearray()
 
     def set_name(self, serialPortName):
         self.serialPortName = serialPortName
@@ -286,11 +328,19 @@ class SerialPortManager:
                 while self.serialPort.in_waiting > 0:
                     # Read only one byte from serial port
                     serialPortByte = self.serialPort.read(1)
+                    self.serialPortBuffer.append(int.from_bytes(serialPortByte, byteorder='big'))
                     # Process incoming bytes
                     self.main_process(serialPortByte)
 
         if self.serialPort.isOpen():
             self.serialPort.close()
+
+    def read_buffer(self):
+        # Return a copy of serial port buffer
+        buffer = self.serialPortBuffer
+        # Clear serial port buffer
+        self.serialPortBuffer = bytearray()
+        return buffer
 
     def __del__(self):
         if self.serialPort.isOpen():
