@@ -1,6 +1,6 @@
 # Python Serial Port + Tkinter GUI
 
-A simple serial port monitior application in Python using [pySerial](https://pypi.org/project/pyserial/). The GUI is designed using [Tkinter](https://docs.python.org/3/library/tkinter.html).
+A simple serial port monitor application in Python using [pySerial](https://pypi.org/project/pyserial/). The GUI is designed using [Tkinter](https://docs.python.org/3/library/tkinter.html).
 
 To test the performance of our Python program, an Arduino program is written to send data on serial port at the baudrate of 921600.
 
